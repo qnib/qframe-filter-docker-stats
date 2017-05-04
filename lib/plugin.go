@@ -3,7 +3,6 @@ package qframe_filter_docker_stats
 import (
 	"C"
 	"fmt"
-	"reflect"
 	"github.com/zpatrick/go-config"
 	"github.com/qnib/qframe-types"
 )
@@ -52,7 +51,6 @@ func (p *Plugin) Run() {
 				// Process ContainerStats and create send multiple qtypes.Metrics
 				cstat := qcs.GetCpuStats()
 				for _, m := range cstat.ToMetrics(p.Name) {
-					p.Log("debug", fmt.Sprintf("Send Metric %s", reflect.TypeOf(m)))
 					p.QChan.Data.Send(m)
 				}
 			}
