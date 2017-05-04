@@ -49,8 +49,14 @@ func (p *Plugin) Run() {
 					continue
 				}
 				// Process ContainerStats and create send multiple qtypes.Metrics
+				//// CPUStats
 				cstat := qcs.GetCpuStats()
 				for _, m := range cstat.ToMetrics(p.Name) {
+					p.QChan.Data.Send(m)
+				}
+				//// MemoryStats
+				mstat := qcs.GetMemStats()
+				for _, m := range mstat.ToMetrics(p.Name) {
 					p.QChan.Data.Send(m)
 				}
 			}
