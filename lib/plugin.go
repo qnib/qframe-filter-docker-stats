@@ -37,7 +37,6 @@ func (p *Plugin) Run() {
 			switch val.(type) {
 			case qtypes.ContainerStats:
 				qcs := val.(qtypes.ContainerStats)
-				p.Log("info", "Received ContainerStats")
 				if qcs.IsLastSource(p.Name) {
 					p.Log("debug", "IsLastSource() = true")
 					continue
