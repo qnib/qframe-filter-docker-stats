@@ -423,6 +423,24 @@
 			"revisionTime": "2017-02-11T01:34:15Z"
 		},
 		{
+			"checksumSHA1": "1kVa89e/yk8L2liYiFuJrNWiXfU=",
+			"path": "github.com/influxdata/influxdb/client/v2",
+			"revision": "72df1fe4d9401711ef5c03ebd9196a06324bcd5f",
+			"revisionTime": "2017-05-03T21:01:44Z"
+		},
+		{
+			"checksumSHA1": "0uQnt7Jef7r5X2JvP9/cIoyxXTo=",
+			"path": "github.com/influxdata/influxdb/models",
+			"revision": "72df1fe4d9401711ef5c03ebd9196a06324bcd5f",
+			"revisionTime": "2017-05-03T21:01:44Z"
+		},
+		{
+			"checksumSHA1": "H/J/qLqzUONXIecHHKtVZmxJZZA=",
+			"path": "github.com/influxdata/influxdb/pkg/escape",
+			"revision": "72df1fe4d9401711ef5c03ebd9196a06324bcd5f",
+			"revisionTime": "2017-05-03T21:01:44Z"
+		},
+		{
 			"checksumSHA1": "l9wW52CYGbmO/NGwYZ/Op2QTmaA=",
 			"path": "github.com/joeshaw/multierror",
 			"revision": "69b34d4ec901851247ae7e77d33909caf9df99ed",
@@ -519,10 +537,16 @@
 			"revisionTime": "2017-05-04T12:23:05Z"
 		},
 		{
-			"checksumSHA1": "lIVcVLcZG4dOxU2obQehCU1FXvg=",
+			"checksumSHA1": "DHj9gvezp9ZwSlMhrG96Kevr4eU=",
 			"path": "github.com/qnib/qframe-filter-docker-stats/lib",
-			"revision": "50c8662437c6cbdfe3571b1b35bbf2fe5578a53f",
-			"revisionTime": "2017-04-23T18:50:00Z"
+			"revision": "3b87e10a0723d6c9b2262154f43c688cf49be075",
+			"revisionTime": "2017-05-04T15:10:32Z"
+		},
+		{
+			"checksumSHA1": "4J0DdfraDwInBu+jVZ71ijVwkKc=",
+			"path": "github.com/qnib/qframe-handler-influxdb/lib",
+			"revision": "d0a5cba71acd392b850a45a8430988c4e9f8edcf",
+			"revisionTime": "2017-05-03T14:29:35Z"
 		},
 		{
 			"checksumSHA1": "Ib8aEI91q80OYljWyMT2aUmPXRk=",
@@ -531,10 +555,10 @@
 			"revisionTime": "2017-04-30T17:47:35Z"
 		},
 		{
-			"checksumSHA1": "xZPmTVNQVm6k8Y9AHkP63TTa78Y=",
+			"checksumSHA1": "UCkDm8oKXjux/FJYy8RzV1cFN1w=",
 			"path": "github.com/qnib/qframe-types",
-			"revision": "386b6c925e7d4051f251286c317b5a5c49164adb",
-			"revisionTime": "2017-05-04T14:14:52Z"
+			"revision": "909a02c68d5559f1bf4b81387ffb6eccae3b8a87",
+			"revisionTime": "2017-05-04T14:51:53Z"
 		},
 		{
 			"checksumSHA1": "cXF2ScH6MC6Y3rijJx6usaA1prY=",
