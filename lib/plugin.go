@@ -3,11 +3,9 @@ package qframe_filter_docker_stats
 import (
 	"C"
 	"fmt"
+	"reflect"
 	"github.com/zpatrick/go-config"
-	"github.com/elastic/beats/metricbeat/module/docker/cpu"
-
 	"github.com/qnib/qframe-types"
-	"github.com/qnib/qframe-utils"
 )
 
 const (
@@ -29,33 +27,33 @@ func New(qChan qtypes.QChan, cfg config.Config, name string) (p Plugin, err erro
 // Run fetches everything from the Data channel and flushes it to stdout
 func (p *Plugin) Run() {
 	p.Log("info", fmt.Sprintf("Start docker-stats filter v%s", p.Version))
-	myId := qutils.GetGID()
-	bg := p.QChan.Data.Join()
+	dc := p.QChan.Data.Join()
 	inputs := p.GetInputs()
+	p.Log("info", fmt.Sprintf("%v", inputs))
 	srcSuccess := p.CfgBoolOr("source-success", true)
 	for {
-		val := bg.Recv()
-		switch val.(type) {
-		case qtypes.QMsg:
-			qm := val.(qtypes.QMsg)
-			if qm.SourceID == myId {
-				continue
-			}
-			if len(inputs) != 0 && !qutils.IsInput(inputs, qm.Source) {
-				continue
-			}
-			if qm.SourceSuccess != srcSuccess {
-				continue
-			}
-			switch qm.Data.(type) {
+		select {
+		case val := <- dc.Read:
+			switch val.(type) {
 			case qtypes.ContainerStats:
-				qm.Type = "filter"
-				qm.Source = p.Name
-				qm.SourceID = myId
-				qm.SourcePath = append(qm.SourcePath, p.Name)
-				cs := qm.Data.(qtypes.ContainerStats)
-				cstat := cs.GetCpuStats()
-				for _, m := range cstat.ToMetrics() {
+				qcs := val.(qtypes.ContainerStats)
+				p.Log("info", "Received ContainerStats")
+				if qcs.IsLastSource(p.Name) {
+					p.Log("debug", "IsLastSource() = true")
+					continue
+				}
+				if len(inputs) != 0 && ! qcs.InputsMatch(inputs) {
+					p.Log("debug", fmt.Sprintf("InputsMatch(%v) = false", inputs))
+					continue
+				}
+				if qcs.SourceSuccess != srcSuccess {
+					p.Log("debug", "qcs.SourceSuccess != srcSuccess")
+					continue
+				}
+				// Process ContainerStats and create send multiple qtypes.Metrics
+				cstat := qcs.GetCpuStats()
+				for _, m := range cstat.ToMetrics(p.Name) {
+					p.Log("debug", fmt.Sprintf("Send Metric %s", reflect.TypeOf(m)))
 					p.QChan.Data.Send(m)
 				}
 			}

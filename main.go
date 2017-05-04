@@ -3,12 +3,13 @@ package main
 import (
 	"log"
 	"fmt"
-	"time"
 
 	"github.com/zpatrick/go-config"
+	"github.com/fsouza/go-dockerclient"
 	"github.com/qnib/qframe-types"
 	"github.com/qnib/qframe-filter-docker-stats/lib"
-	"github.com/fsouza/go-dockerclient"
+	"github.com/qnib/qframe-collector-docker-events/lib"
+	"github.com/qnib/qframe-collector-docker-stats/lib"
 )
 
 
@@ -24,7 +25,9 @@ func main() {
 	qChan := qtypes.NewQChan()
 	qChan.Broadcast()
 	cfgMap := map[string]string{
-		"filter.test.inputs": "dstats-in",
+		"collector.docker-events.docker-host": "unix:///var/run/docker.sock",
+		"filter.container-stats.inputs": "docker-stats",
+		"log.level": "info",
 	}
 
 	cfg := config.NewConfig(
@@ -32,43 +35,43 @@ func main() {
 			config.NewStatic(cfgMap),
 		},
 	)
-	p, err := qframe_filter_docker_stats.New(qChan, *cfg, "test")
+	// Start filter
+	pfc, err := qframe_filter_docker_stats.New(qChan, *cfg, "container-stats")
 	if err != nil {
-		log.Printf("[EE] Failed to create filter: %v", err)
+		log.Printf("[EE] Failed to docker-stats filter: %v", err)
+		return
+	}
+	go pfc.Run()
+	// start docker-events
+	pe, err := qframe_collector_docker_events.New(qChan, *cfg, "docker-events")
+	if err != nil {
+		log.Printf("[EE] Failed to docker-event collector: %v", err)
+		return
+	}
+	go pe.Run()
+	// start docker-stats
+	p, err := qframe_collector_docker_stats.New(qChan, *cfg, "docker-stats")
+	if err != nil {
+		log.Printf("[EE] Failed to docker-stats collector: %v", err)
 		return
 	}
 	go p.Run()
-	time.Sleep(2*time.Second)
-	bg := qChan.Data.Join()
-	qm := qtypes.NewQMsg("test", "dstats-in")
-	qm.Msg = "Send Metrics of TestContainer1"
-	oldPerCpuValuesTest := [][]uint64{{1, 9, 9, 5}, {1, 2, 3, 4}, {0, 0, 0, 0}}
-	newPerCpuValuesTest := [][]uint64{{100000001, 900000009, 900000009, 500000005}, {101, 202, 303, 404}, {0, 0, 0, 0}}
-	for index := range statsList {
-		statsList[index].PreCPUStats.CPUUsage.PercpuUsage = oldPerCpuValuesTest[index]
-		statsList[index].CPUStats.CPUUsage.PercpuUsage = newPerCpuValuesTest[index]
-	}
-	qm.Data = qtypes.ContainerStats{
-		Container: docker.APIContainers{
-			ID: "ContainerID",
-			Names: []string{"ContainerName"},
-			Command: "echo Huhu",
-			Created: 0,
-			Image: "debian:latest",
-		},
-		Stats: *statsList[0],
-	}
-	qChan.Data.Send(qm)
+	dc := qChan.Data.Join()
+	done := 5
 	for {
-		qm = bg.Recv().(qtypes.QMsg)
-		if qm.Source == "test" {
-			continue
+		select {
+		case msg := <-dc.Read:
+			switch msg.(type) {
+			case qtypes.Metric:
+				qm := msg.(qtypes.Metric)
+				if qm.IsLastSource("container-stats") {
+					fmt.Printf("%s Metric %s: %v %s\n", qm.GetTimeRFC(), qm.Name, qm.Value, qm.GetDimensionList())
+					done -= 1
+				}
+			}
 		}
-		fmt.Printf("#### Received result filter for input: %s\n", qm.Msg)
-		for k, v := range qm.KV {
-			fmt.Printf("%+15s: %s\n", k, v)
+		if done == 0 {
+			break
 		}
-		break
-
 	}
 }
