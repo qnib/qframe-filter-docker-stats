@@ -26,7 +26,7 @@ $ govendor fetch +m
 The `Dockerfile` build a container that runs the example implementation as a standalone daemon.
 
 ```bash
-$ docker run -ti -v /var/run/docker.sock:/var/run/docker.sock qnib/$(basename $(pwd))
+$ docker run -ti -v /var/run/docker.sock:/var/run/docker.sock qnib/qframe-filter-docker-stats
  > execute CMD 'qframe-filter-docker-stats'
  2017/05/04 15:08:47 [II] Dispatch broadcast for Back, Data and Tick
  2017/05/04 15:08:47 [  INFO] container-stats >> Start docker-stats filter v0.1.0
