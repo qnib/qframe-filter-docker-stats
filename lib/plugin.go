@@ -59,6 +59,11 @@ func (p *Plugin) Run() {
 				for _, m := range mstat.ToMetrics(p.Name) {
 					p.QChan.Data.Send(m)
 				}
+				//// MemoryStats
+				nstat := qcs.GetNetStats()
+				for _, m := range nstat.ToMetrics(p.Name) {
+					p.QChan.Data.Send(m)
+				}
 			}
 		}
 	}
