@@ -49,22 +49,42 @@ func (p *Plugin) Run() {
 					continue
 				}
 				// Process ContainerStats and create send multiple qtypes.Metrics
-				//// CPUStats
-				cstat := qcs.GetCpuStats()
-				for _, m := range cstat.ToMetrics(p.Name) {
-					p.QChan.Data.Send(m)
-				}
-				//// MemoryStats
-				mstat := qcs.GetMemStats()
-				for _, m := range mstat.ToMetrics(p.Name) {
-					p.QChan.Data.Send(m)
-				}
-				//// MemoryStats
-				nstat := qcs.GetNetStats()
-				for _, m := range nstat.ToMetrics(p.Name) {
-					p.QChan.Data.Send(m)
-				}
+				go p.GetCpuMetrics(qcs)
+				go p.GetMemoryMetrics(qcs)
+				go p.GetNetworkMetrics(qcs)
 			}
 		}
+	}
+}
+
+func (p *Plugin) GetCpuMetrics(qcs qtypes.ContainerStats) {
+	stat := qcs.GetCpuStats()
+	for _, m := range stat.ToMetrics(p.Name) {
+		p.QChan.Data.Send(m)
+	}
+}
+
+func (p *Plugin) GetMemoryMetrics(qcs qtypes.ContainerStats) {
+	stat := qcs.GetMemStats()
+	for _, m := range stat.ToMetrics(p.Name) {
+		p.QChan.Data.Send(m)
+	}
+}
+
+func (p *Plugin) GetNetworkMetrics(qcs qtypes.ContainerStats) {
+	stat := qcs.GetNetStats()
+	for _, m := range stat.ToMetrics(p.Name) {
+		p.QChan.Data.Send(m)
+	}
+	aggStats := qtypes.NewNetStats(qcs.Base, qcs.GetContainer())
+	for iface, _ := range qcs.Stats.Networks {
+		stats := qcs.GetNetPerIfaceStats(iface)
+		for _, m := range stats.ToMetrics(p.Name) {
+			p.QChan.Data.Send(m)
+		}
+		aggStats = qtypes.AggregateNetStats("total", aggStats, stats)
+	}
+	for _, m := range aggStats.ToMetrics(p.Name) {
+		p.QChan.Data.Send(m)
 	}
 }
