@@ -10,6 +10,7 @@ import (
 const (
 	version = "0.1.2"
 	pluginTyp = "filter"
+	pluginPkg = "docker-stats"
 )
 
 type Plugin struct {
@@ -18,14 +19,14 @@ type Plugin struct {
 
 func New(qChan qtypes.QChan, cfg config.Config, name string) (p Plugin, err error) {
 	p = Plugin{
-		Plugin: qtypes.NewNamedPlugin(qChan, cfg, pluginTyp, name, version),
+		Plugin: qtypes.NewNamedPlugin(qChan, cfg, pluginTyp, pluginPkg, name, version),
 	}
 	return p, err
 }
 
 // Run fetches everything from the Data channel and flushes it to stdout
 func (p *Plugin) Run() {
-	p.Log("info", fmt.Sprintf("Start docker-stats filter v%s", p.Version))
+	p.Log("notice", fmt.Sprintf("Start docker-stats filter v%s", p.Version))
 	dc := p.QChan.Data.Join()
 	inputs := p.GetInputs()
 	p.Log("info", fmt.Sprintf("%v", inputs))
