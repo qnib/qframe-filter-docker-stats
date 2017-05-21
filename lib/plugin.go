@@ -28,25 +28,14 @@ func New(qChan qtypes.QChan, cfg *config.Config, name string) (p Plugin, err err
 func (p *Plugin) Run() {
 	p.Log("notice", fmt.Sprintf("Start docker-stats filter v%s", p.Version))
 	dc := p.QChan.Data.Join()
-	inputs := p.GetInputs()
-	p.Log("info", fmt.Sprintf("%v", inputs))
-	srcSuccess := p.CfgBoolOr("source-success", true)
+	go p.DispatchMsgCount()
 	for {
 		select {
 		case val := <- dc.Read:
 			switch val.(type) {
 			case qtypes.ContainerStats:
 				qcs := val.(qtypes.ContainerStats)
-				if qcs.IsLastSource(p.Name) {
-					p.Log("debug", "IsLastSource() = true")
-					continue
-				}
-				if len(inputs) != 0 && ! qcs.InputsMatch(inputs) {
-					p.Log("debug", fmt.Sprintf("InputsMatch(%v) = false", inputs))
-					continue
-				}
-				if qcs.SourceSuccess != srcSuccess {
-					p.Log("debug", "qcs.SourceSuccess != srcSuccess")
+				if p.StopProcessingCntStats(qcs, false) {
 					continue
 				}
 				// Process ContainerStats and create send multiple qtypes.Metrics
